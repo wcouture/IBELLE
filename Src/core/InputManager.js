@@ -11,8 +11,38 @@ export class InputManager {
     };
   }
 
+  clearSceneKeyMap(scene) {
+    if (scene.__inputKeyMap) {
+      scene.__inputKeyMap = null;
+    }
+
+    if (scene.__inputKeyMapLifecycleBound) {
+      scene.__inputKeyMapLifecycleBound = false;
+    }
+  }
+
   getKeyMap(scene) {
-    if (!scene.__inputKeyMap) {
+    if (!scene.__inputKeyMapLifecycleBound) {
+      scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+        this.clearSceneKeyMap(scene);
+      });
+
+      scene.events.once(Phaser.Scenes.Events.DESTROY, () => {
+        this.clearSceneKeyMap(scene);
+      });
+
+      scene.__inputKeyMapLifecycleBound = true;
+    }
+
+    const hasValidKeyMap =
+      scene.__inputKeyMap &&
+      scene.__inputKeyMap.up &&
+      scene.__inputKeyMap.down &&
+      scene.__inputKeyMap.left &&
+      scene.__inputKeyMap.right &&
+      scene.__inputKeyMap.interact;
+
+    if (!hasValidKeyMap) {
       scene.__inputKeyMap = scene.input.keyboard.addKeys({
         up: this.bindings.up,
         down: this.bindings.down,
@@ -45,5 +75,16 @@ export class InputManager {
   isDown(scene, action) {
     const keys = this.getKeyMap(scene);
     return !!keys[action]?.isDown;
+  }
+
+  wasPressed(scene, action) {
+    const keys = this.getKeyMap(scene);
+    const key = keys[action];
+
+    if (!key) {
+      return false;
+    }
+
+    return Phaser.Input.Keyboard.JustDown(key);
   }
 }

@@ -1,30 +1,100 @@
 import Phaser from 'phaser';
-import { renderWorldMap } from '../world/renderWorldMap.js';
+import { createPlayerVisual, preloadPlayerSprite, preloadTileSprites, renderWorldMap } from '../world/renderWorldMap.js';
 import { lazyLagoonMap } from '../world/maps/lazyLagoonMap.js';
-import UIManager from './../core/UIManager.js';
+import UIManager from '../core/UIManager.js';
+import { GameSceneHUD } from '../ui/GameSceneHUD.js';
+import { SpriteAnimationHandler } from '../core/SpriteAnimationHandler.js';
 
 export class LazyLagoonScene extends Phaser.Scene {
   constructor() {
     super('LazyLagoon');
+    this.gameSceneHUD = undefined;
+    this.playerAnimationHandler = undefined;
+    this.refreshVisibleTiles = undefined;
+    this.checkInteractiveTiles = undefined;
+    this.actionStates = {};
+  }
+
+  preload() {
+    this.playerAnimationHandler = new SpriteAnimationHandler(this);
+    preloadTileSprites(this);
+    preloadPlayerSprite(this);
+    this.playerAnimationHandler.preloadFrameSeries([
+      {
+        seriesKey: 'player-idle',
+        framePrefix: 'player_idle_',
+        startFrame: 0,
+        endFrame: 3,
+      },
+      {
+        seriesKey: 'player-walk',
+        framePrefix: 'player_walk_',
+        startFrame: 0,
+        endFrame: 5,
+      },
+    ]);
   }
 
   create() {
     const { width, height } = this.scale;
     this.inputManager = this.registry.get('inputManager');
     this.cameras.main.setBackgroundColor('#1d4ed8');
-    const uiManager = new UIManager(this);
+    this.uiManager = new UIManager(this);
 
+    // Initialize game scene HUD
+    const save = this.registry.get('activeSave');
+    this.gameSceneHUD = new GameSceneHUD(this.uiManager);
+    this.gameSceneHUD.setWorld('Lazy Lagoon');
+    this.gameSceneHUD.setSciencePoints(save?.sciencePoints ?? 0);
+    this.gameSceneHUD.setKnowledge(save?.knowledgeMeter ?? 0);
+
+    // Generate world map
     const generatedWorld = renderWorldMap(this, lazyLagoonMap);
     this.worldBounds = generatedWorld.bounds;
+    this.refreshVisibleTiles = generatedWorld.refreshVisibleTiles;
+    this.checkInteractiveTiles = generatedWorld.checkInteractiveTiles;
+    const playerWidth = lazyLagoonMap.tileSize * 0.8;
+    const playerHeight = lazyLagoonMap.tileSize * 1.8;
 
-    this.player = this.add.rectangle(generatedWorld.spawnPoint.x, generatedWorld.spawnPoint.y, 22, 22, 0xfacc15);
-    this.player.setDepth(2);
+    // Render player
+    this.player = createPlayerVisual(
+      this,
+      generatedWorld.spawnPoint.x,
+      generatedWorld.spawnPoint.y,
+      playerWidth,
+      playerHeight,
+      0xfacc15,
+    );
 
-    uiManager.addLabel(32, 24, 'Lazy Lagoon');
-    const backToTown = uiManager.addButton(width - 260, 40, 'Town Square', () => this.scene.start('TownSquare'));
+    this.playerAnimationHandler.createAnimations([
+      {
+        animationKey: 'player-idle',
+        seriesKey: 'player-idle',
+        frameRate: 2,
+      },
+      {
+        animationKey: 'player-walk',
+        seriesKey: 'player-walk',
+        frameRate: 9,
+      },
+    ]);
+    this.playerAnimationHandler.play(this.player, 'player-idle');
+
+    const camera = this.cameras.main;
+    const worldWidth = this.worldBounds.maxX - this.worldBounds.minX;
+    const worldHeight = this.worldBounds.maxY - this.worldBounds.minY;
+    camera.setBounds(this.worldBounds.minX, this.worldBounds.minY, worldWidth, worldHeight);
+    camera.setDeadzone(this.scale.width * 0.5, this.scale.height * 0.5);
+    camera.startFollow(this.player, true, 0.2, 0.2);
+
+    this.refreshVisibleTiles?.();
   }
 
   update() {
+    if (this.inputManager.wasPressed(this, 'interact')) {
+        this.scene.start('TownSquare');
+    }
+
     const speed = 220;
     const movement = this.inputManager.getMovementVector(this);
     const halfWidth = this.player.width / 2;
@@ -35,5 +105,38 @@ export class LazyLagoonScene extends Phaser.Scene {
 
     this.player.x = Phaser.Math.Clamp(this.player.x, this.worldBounds.minX + halfWidth, this.worldBounds.maxX - halfWidth);
     this.player.y = Phaser.Math.Clamp(this.player.y, this.worldBounds.minY + halfHeight, this.worldBounds.maxY - halfHeight);
+
+    const movementMagnitude = Math.hypot(movement.x, movement.y);
+    if (movementMagnitude > 0) {
+      const playbackRate = Phaser.Math.Linear(0.8, 1.4, movementMagnitude);
+      this.playerAnimationHandler.play(this.player, 'player-walk', playbackRate);
+    } else {
+      this.playerAnimationHandler.play(this.player, 'player-idle', 1);
+    }
+
+    this.refreshVisibleTiles?.();
+    this.checkInteractiveTiles?.(this.player, this.handleActionAvailable.bind(this), this.handleActionUnavailable.bind(this));
+  }
+
+  handleActionAvailable(tileData, screenLocation, gridLocation) {
+    if (this.actionStates) {
+        const key = gridLocation.x + ',' + gridLocation.y;
+        const label = this.uiManager.addLabel(screenLocation.x, screenLocation.y, tileData.interact_action.name, true, true);
+        this.actionStates[key] = { available: true, uiElement: label };
+    }
+  }
+
+  handleActionUnavailable(tileData, screenLocation, gridLocation) {
+    if (this.actionStates) {
+        const key = gridLocation.x + ',' + gridLocation.y;
+        const actionState = this.actionStates[key];
+        if (!actionState) return;
+
+        actionState.available = false;
+        if (actionState?.uiElement) {
+            this.uiManager.removeLabel(actionState.uiElement, true);
+            actionState.uiElement = null;
+        }
+    }
   }
 }
