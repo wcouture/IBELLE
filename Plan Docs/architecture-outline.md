@@ -6,39 +6,44 @@ The game should use a modular architecture where gameplay systems remain indepen
 ## 2. High-Level System Breakdown
 
 ### 2.1 Core Game Systems
-- GameBootstrap
-- InputManager (thin Phaser wrapper)
-- SaveManager
-- ResourceLoader
-- AudioManager
+- GameBootstrap ✅
+- InputManager (thin Phaser wrapper) ✅
+- SaveManager ✅
+- SpriteAnimationHandler ✅
+- Actions (tile interaction action definitions) ✅
+- ResourceLoader *(planned)*
+- AudioManager *(planned)*
 
 ### 2.2 World and Entity Systems
-- Phaser Scene classes for each world
-- PlayerController
-- CharacterEntity
-- CompanionSystem
-- InteractableManager
-- InteractionPromptController
+- Phaser Scene classes for each world ✅ (TownSquare, LazyLagoon)
+- TileMap / renderWorldMap ✅
+- TilePalette ✅
+- PlayerController ✅ (inline in world scenes)
+- CharacterEntity *(planned — currently inlined)*
+- CompanionSystem *(planned)*
+- InteractableManager ✅ (implemented as `checkInteractiveTiles` inside `renderWorldMap`)
+- InteractionPromptController ✅ (prompt labels via UIManager in each scene)
 
 ### 2.3 UI Systems
-- HUDController
-- MenuController
-- SettingsController
-- TransitionController
-- SaveSlotUI
+- UIManager ✅
+- GameSceneHUD ✅ (science points, knowledge meter, world name)
+- MenuController ✅ (MainMenuScene)
+- SettingsController *(planned)*
+- TransitionController *(planned — current step)*
+- SaveSlotUI *(planned)*
 
 ### 2.4 Gameplay Systems
-- ProgressionManager
-- InventoryManager
-- MinigameManager
-- RewardSystem
-- EventDispatcher
-- StoryManager
-- CommunityKnowledgeMeter
-- AntagonistController
-- CutsceneManager
-- DialogueBoxController
-- TextScroller
+- ProgressionManager *(planned)*
+- InventoryManager *(planned)*
+- MinigameManager *(planned)*
+- RewardSystem *(planned)*
+- EventDispatcher *(planned)*
+- StoryManager *(planned)*
+- CommunityKnowledgeMeter *(planned)*
+- AntagonistController *(planned)*
+- CutsceneManager *(planned)*
+- DialogueBoxController *(planned)*
+- TextScroller *(planned)*
 
 ## 3. Story and Antagonist Structure
 
@@ -110,6 +115,11 @@ Dependencies:
 - SaveManager
 - ResourceLoader
 
+Current implementation:
+- creates a 1280x720 Phaser game with pixel-art rendering, arcade physics, and FIT scale mode
+- registers `saveManager` and `inputManager` in the game registry
+- registers `MainMenuScene`, `TownSquareScene`, and `LazyLagoonScene`
+
 ### Phaser Scene System
 Responsibilities:
 - manage the active scene
@@ -130,6 +140,13 @@ Key concepts:
 - action checks resolved via scene.input.keyboard
 - helpers for movement and interaction state
 
+Current implementation:
+- default bindings: W/A/S/D for movement, E for interact
+- `getKeyMap(scene)` creates and caches per-scene key maps, cleaned up on scene SHUTDOWN and DESTROY
+- `getMovementVector(scene)` returns a normalized `{x, y}` vector
+- `isDown(scene, action)` and `wasPressed(scene, action)` check per-scene action state
+- rebinding UI is not yet implemented
+
 ### SaveManager
 Responsibilities:
 - create, load, and save slot data
@@ -145,6 +162,14 @@ Save structure:
 - completedMinigames
 - unlockedCompanions
 - worldFlags
+
+Current implementation:
+- persists exactly three save slots under localStorage key `ibelle-environmental-scientist-saves`
+- each slot stores: `scene`, `sciencePoints`, `knowledgeMeter`, `inventory`, `companions`, `createdAt`
+- `createSave(slotIndex, initialState)` populates a slot with defaults and writes to storage
+- `loadSave(slotIndex)` returns the state object for a slot
+- `loadAll()` returns all three slots, merging stored values over the default shape
+- Noonie is included as the default companion in every new save
 
 ### ResourceLoader
 Responsibilities:
@@ -197,6 +222,12 @@ Responsibilities:
 
 In this project, each world is implemented as a Phaser.Scene subclass such as TownSquareScene or LazyLagoonScene rather than a custom world controller class.
 
+Currently implemented worlds:
+- `TownSquareScene` — loaded from `townSquareMap.js`, 250x250 tiles, player spawns at map center
+- `LazyLagoonScene` — loaded from `lazyLagoonMap.js`, 250x250 tiles
+
+Pending worlds (Phase 5): Funky Forest, Sweaty Swamp, Pleasant Plains
+
 ### TileMap
 Responsibilities:
 - store tile grids as 2D byte arrays
@@ -210,9 +241,29 @@ Current format:
 - decorationLayer: number[][]
 
 Current rendering behavior:
-- tile IDs map to colors through a tile palette
+- tile IDs map to sprite textures through `TILE_COLLECTION` in `tilePalette.js`
+- tile colors in `TILE_COLOR_PALETTE` are still defined but sprite textures are the active rendering path
 - unknown IDs render a fallback debug color
 - scene bounds and spawn point are derived from map dimensions and spawn tile
+- `renderWorldMap` supports viewport culling via `refreshVisibleTiles` with an overscan buffer
+
+### SpriteAnimationHandler
+Responsibilities:
+- preload sprite sheet frames from tile sprite asset files
+- create named animation configurations in a Phaser scene
+- play or switch animations on a game object with playback rate control
+- prevent redundant animation restarts when the same animation is already active
+
+### Actions
+Responsibilities:
+- define the set of named tile interaction actions that can be assigned to tiles in `tilePalette.js`
+- each action has an `id` and a `name`
+
+Current defined actions:
+- SHAKE (id: 0)
+- PICK (id: 1)
+- READ (id: 2)
+- RIPPLE (id: 3)
 
 ## 7. Interaction System Architecture
 
@@ -248,6 +299,11 @@ Responsibilities:
 - update science points, item count, and companions
 - reflect active scene or mission state
 - display active narrative objectives and community knowledge meter
+
+Current implementation:
+- `GameSceneHUD` satisfies the core HUD role
+- displays: world name (top-left), science points, and knowledge meter percentage
+- inventory, companions, objectives, and full knowledge meter detail not yet implemented
 
 ### MenuController
 Responsibilities:

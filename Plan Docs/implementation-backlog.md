@@ -19,10 +19,10 @@ Before expanding into all locations and content, the project should reach a play
 
 ## 3. Backlog Structure
 
-### Phase 1: Foundation and Tooling
+### Phase 1: Foundation and Tooling ✅ COMPLETE
 Priority: Must have
 
-#### 1. Project Setup
+#### 1. Project Setup ✅ DONE
 - Create project structure for the web game
 - Set up package manager and build tooling
 - Configure development scripts for local run and production build
@@ -31,110 +31,151 @@ Priority: Must have
   - project runs locally
   - developer can launch a blank scene and see output
 
-#### 2. Phaser 3 Bootstrap
+#### 2. Phaser 3 Bootstrap ✅ DONE
 - Create a Phaser-based game bootstrap
 - Initialize the game config and main scene flow
 - Add a basic game loop and resize handling
 - Acceptance criteria:
   - a blank or placeholder scene renders successfully
   - app updates each frame without errors
+- Implementation notes:
+  - `GameBootstrap` creates the Phaser game instance and registers `SaveManager` and `InputManager` to the game registry
+  - 1280x720 with pixel-art rendering, arcade physics, and FIT scale mode
 
-#### 3. UI and HUD in Phaser Scenes
+#### 3. UI and HUD in Phaser Scenes ✅ DONE
 - Build menu, HUD, and overlays using Phaser scene UI objects
-- Add loading screen or placeholder splash state
 - Keep overlay/panel behavior consistent across scenes
 - Acceptance criteria:
   - UI elements render correctly in Phaser scenes
   - layout is stable across screen sizes
+- Implementation notes:
+  - `UIManager` provides `addLabel`, `addButton`, and `removeLabel` helpers using Phaser game objects
+  - `GameSceneHUD` wraps UIManager and exposes `setWorld`, `setSciencePoints`, and `setKnowledge` methods
 
-#### 4. Phaser Scene Flow and Registry State
+#### 4. Phaser Scene Flow and Registry State ✅ DONE
 - Use Phaser ScenePlugin for scene transitions and lifecycle
 - Use game registry + save systems for shared game state
-- Define transition hooks between menu, world, and minigame scenes
 - Acceptance criteria:
   - scenes can be switched cleanly
   - state shared through registry and save systems remains consistent
+- Implementation notes:
+  - Scenes registered: `MainMenuScene`, `TownSquareScene`, `LazyLagoonScene`
+  - `activeSave`, `saveManager`, and `inputManager` are stored in the game registry
 
-#### 5. Save Data Model
+#### 5. Save Data Model ✅ DONE
 - Define save-file structure
 - Add save slot metadata
 - Build a save/load API for browser localStorage or equivalent
 - Acceptance criteria:
   - save slots can be created and loaded
   - save state persists after refresh or reload
+- Implementation notes:
+  - `SaveManager` persists three save slots under `localStorage` key `ibelle-environmental-scientist-saves`
+  - Each slot stores: `scene`, `sciencePoints`, `knowledgeMeter`, `inventory`, `companions`, `createdAt`
+  - Default state includes Noonie as the first companion
 
 ---
 
-### Phase 2: Core Gameplay Systems
+### Phase 2: Core Gameplay Systems ✅ COMPLETE
 Priority: Must have
 
-#### 6. Input Manager and Keybinding System
+#### 6. Input Manager and Keybinding System ✅ DONE
 - Wrap Phaser keyboard input for normalized actions
 - Define action names for movement and interaction
-- Add settings-based key rebinding flow
 - Default keys:
-  - WASD / arrow keys for movement
+  - WASD for movement
   - E for interaction
 - Acceptance criteria:
   - movement responds to configured keys
-  - key bindings can be updated from the settings menu
+- Implementation notes:
+  - `InputManager` stores bindings as Phaser key codes and creates per-scene key maps via `getKeyMap`
+  - Key maps are cleaned up on scene SHUTDOWN and DESTROY events
+  - `getMovementVector` returns a normalized `{x, y}` vector
+  - `isDown` and `wasPressed` check action state per scene
+  - Settings-based rebinding UI is not yet implemented (see Step 13)
 
-#### 7. Player Controller
+#### 7. Player Controller ✅ DONE
 - Create player entity with movement logic
 - Support top-down movement with direction and animation feedback
 - Add speed and collision behavior
 - Acceptance criteria:
   - player moves smoothly in world space
   - movement aligns with chosen input mapping
+- Implementation notes:
+  - Player movement is handled directly inside each world scene's `update` loop
+  - Movement vector from `InputManager` is applied at 220 px/s with world-bounds clamping
+  - `SpriteAnimationHandler` manages frame preloading and animation playback
+  - Idle (4-frame, 2fps) and walk (6-frame, 9fps) animations are active
 
-#### 8. Interaction System
-- Create interactable base class or interface
+#### 8. Interaction System ✅ DONE
 - Add interaction radius and prompt display logic
 - Add interaction detection when player is within range
 - Acceptance criteria:
   - prompt appears when near an interactable
   - interaction triggers logic only when key is pressed
+- Implementation notes:
+  - `checkInteractiveTiles` from `renderWorldMap` scans nearby tiles each update frame
+  - When a tile with an `interact_action` is in range, `handleActionAvailable` fires and shows a label via UIManager
+  - When out of range, `handleActionUnavailable` fires and removes the label
+  - `Actions.js` defines the action types: SHAKE, PICK, READ, and RIPPLE
 
-#### 9. Interactable Registry / Manager
+#### 9. Interactable Registry / Manager ✅ DONE
 - Build a registry of active world interactables
 - Add detection based on distance and proximity
 - Support event callbacks or action dispatch
 - Acceptance criteria:
   - each scene can register multiple interactables
   - only the nearest valid interactable is considered active
+- Implementation notes:
+  - Interaction detection is tile-driven: tiles in `tilePalette.js` carry an `interact_action` field
+  - Proximity detection is built into `checkInteractiveTiles` in `renderWorldMap.js`
+  - Scene-level callbacks (`handleActionAvailable`, `handleActionUnavailable`) dispatch behavior
 
-#### 10. World Scene Setup
+#### 10. World Scene Setup ✅ DONE
 - Build world scenes as Phaser.Scene subclasses
 - Add data-driven map generation from 2D byte arrays
 - Add at least two map layers: worldLayer and decorationLayer
-- Map each tile ID to a color placeholder (later to sprite tile)
+- Map each tile ID to a sprite tile
 - Add player spawn point to the world
 - Add one basic interactable to test the flow
 - Acceptance criteria:
   - world and decoration layers render from byte-array map data
   - a map loads and displays correctly
   - player can move around and interact with world objects
-
-#### 11. Transition Controller
-- Add screen-cover overlay animation
-- Trigger transition before and after scene swap
-- Ensure overlay fades or slides cleanly
-- Acceptance criteria:
-  - scene changes do not feel abrupt
-  - transition timing remains consistent
+- Implementation notes:
+  - `TownSquareScene` and `LazyLagoonScene` are both fully rendered from map data modules
+  - `renderWorldMap` supports viewport culling via `refreshVisibleTiles` using an overscan buffer
+  - Tile IDs map to sprite textures via `TILE_COLLECTION` in `tilePalette.js`
+  - Map size is 250x250 tiles per world; tile size is configurable per map module
+  - Town Square starts in the world center and E key currently triggers scene switch to Lazy Lagoon
 
 ---
 
 ### Phase 3: World Content and Progression
 Priority: High
 
-#### 12. Main Menu Flow
+#### 11. Transition Controller ← CURRENT STEP
+- Add screen-cover overlay animation
+- Trigger transition before and after scene swap
+- Ensure overlay fades or slides cleanly
+- Acceptance criteria:
+  - scene changes do not feel abrupt
+  - transition timing remains consistent
+- Notes:
+  - Currently TownSquare hard-switches to LazyLagoon on E press with no overlay
+  - This step should add a fade or slide panel that runs before and after `scene.start`
+
+#### 12. Main Menu Flow ✅ DONE
 - Create menu screen with Start Game, Load Game, and Settings actions
-- Add save-slot selection for new game
-- Add save-slot selection for loading a game
+- Start a new game or load an existing save from the menu
 - Acceptance criteria:
   - menu buttons function correctly
   - user can start a fresh game or load a save
+- Implementation notes:
+  - `MainMenuScene` has working Start Game and Load Game buttons
+  - Start Game finds the first empty slot (or overwrites slot 0) and transitions to TownSquare
+  - Load Game finds the first used slot and restores the saved scene
+  - Settings button shows a "coming soon" stub
 
 #### 13. Settings Menu
 - Add volume slider
@@ -163,6 +204,9 @@ Priority: High
   - HUD updates in real time
   - world state is visible while playing
   - player can track the story and knowledge meter during exploration
+- Implementation notes:
+  - `GameSceneHUD` already displays world name, science points, and knowledge meter percentage
+  - Full HUD with inventory, companions, and objective summary is still needed
 
 #### 16. Cutscene and Dialogue Foundation
 - Add a cutscene runner that executes async action sequences using promises
@@ -172,22 +216,27 @@ Priority: High
   - actions execute in sequence with proper timing
   - dialogue text renders character by character and can be skipped
 
-#### 17. World Locations Foundation
+#### 17. World Locations Foundation ✅ PARTIALLY DONE
 - Create map data modules for Town Square and additional locations
 - Use shared schema for tileSize, playerSpawnTile, worldLayer, and decorationLayer
-- Add at least 2 additional world areas with distinct colors and props
 - Add world-specific interactable placement
 - Acceptance criteria:
   - each location loads using the same scene framework
   - each location feels visually distinct
+- Implementation notes:
+  - Town Square and Lazy Lagoon are fully implemented as Phaser scenes with map data modules
+  - Three remaining locations (Funky Forest, Sweaty Swamp, Pleasant Plains) are not yet added
 
 #### 18. Scene Switcher Interactable
 - Add a dedicated object type for changing scenes
-- Configure destination id and transition timing
+- Configure destination scene ID and apply the transition controller
 - Verify the player can move between locations
 - Acceptance criteria:
   - interaction triggers scene transitions
   - world state persists correctly after switching scenes
+- Notes:
+  - Currently Town Square switches directly to Lazy Lagoon on E press as a placeholder
+  - Needs to be replaced with a data-driven scene-switcher tied to specific world tiles or objects
 
 ---
 
@@ -369,16 +418,28 @@ A task should be considered complete when:
 - progression or save state is maintained correctly
 - the feature can be tested by a fresh developer or playtester
 
-## 7. Immediate Next Step
-The best first implementation batch is:
+## 7. Current Implementation State
 
-- project bootstrap
-- scene manager
-- input manager
-- player controller
-- basic interactable system
-- world scene prototype
-- transition overlay
-- save data model
+Phases 1 and 2 are complete. The following has been implemented:
 
-This gives the project a solid playable foundation before deeper content and mini-game work begins.
+- Vite project with Phaser 3 (Steps 1-2)
+- UIManager and GameSceneHUD for Phaser UI (Step 3)
+- Scene registry with SaveManager and InputManager (Step 4)
+- Three-slot save system via localStorage (Step 5)
+- InputManager with normalized action bindings (Step 6)
+- Player movement with sprite animations via SpriteAnimationHandler (Step 7)
+- Tile-driven interaction proximity system (Steps 8-9)
+- TownSquareScene and LazyLagoonScene with tile-based maps (Step 10)
+- MainMenuScene with Start Game and Load Game flows (Step 12)
+
+## 8. Immediate Next Steps
+
+The highest-priority remaining work in order:
+
+1. **Transition Controller (Step 11)** — add a screen-cover fade or slide overlay that runs before and after every `scene.start` call so scene changes feel polished
+2. **Scene Switcher Interactable (Step 18)** — replace the current hardcoded E-key scene switch in TownSquare with a data-driven tile-based or object-based scene switcher that uses the transition controller
+3. **Settings Menu (Step 13)** — build the settings scene with volume slider and keybinding rebind UI to complete the main menu flow
+4. **Progression Manager (Step 14)** — centralize science points, inventory, and story flags so they survive scene transitions and can drive the HUD and win condition
+5. **Full HUD (Step 15)** — extend GameSceneHUD to show inventory, companions, objectives, and the community knowledge meter
+6. **Cutscene and Dialogue Foundation (Step 16)** — add the async cutscene runner and text-scroller so story beats can play between player actions
+7. **Remaining World Locations (Step 17 / Phase 5)** — add Funky Forest, Sweaty Swamp, and Pleasant Plains using the existing scene and map framework
