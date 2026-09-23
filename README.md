@@ -252,9 +252,9 @@ Based on planning docs, expected next major areas include:
 - polish and playtesting passes
 
 See:
-- `/home/runner/work/IBELLE/IBELLE/Plan Docs/technical-design.md`
-- `/home/runner/work/IBELLE/IBELLE/Plan Docs/architecture-outline.md`
-- `/home/runner/work/IBELLE/IBELLE/Plan Docs/implementation-backlog.md`
+- `Plan Docs/technical-design.md`
+- `Plan Docs/architecture-outline.md`
+- `Plan Docs/implementation-backlog.md`
 
 ---
 
