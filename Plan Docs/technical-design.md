@@ -81,19 +81,21 @@ Each scene should manage:
 
 Current implementation note:
 - each world scene is generated from map data modules
-- map data includes at least two 2D layers: worldLayer and decorationLayer
-- each byte value is a tile ID that currently maps to a color
-- the same IDs are intended to map to sprite tiles in a later pass
+- map data includes two 2D layers: worldLayer and decorationLayer
+- each byte value is a tile ID that maps to a sprite texture via `TILE_COLLECTION` in `tilePalette.js`
+- fallback color rendering is available for unknown tile IDs
+- viewport culling is handled by `refreshVisibleTiles` with an overscan buffer
+- interactive tiles carry an `interact_action` field; `checkInteractiveTiles` detects proximity and calls scene-level callbacks
 
 ### 6.3 World Locations
 World scenes are defined as Phaser.Scene subclasses that can be added to the game config.
 
 Worlds:
-- Town Square
-- Lazy Lagoon
-- Funky Forest
-- Sweaty Swamp
-- Pleasant Plains
+- Town Square ✅ implemented
+- Lazy Lagoon ✅ implemented
+- Funky Forest *(planned)*
+- Sweaty Swamp *(planned)*
+- Pleasant Plains *(planned)*
 
 Current map schema:
 - tileSize: number
@@ -116,6 +118,8 @@ Use Phaser's native keyboard input system and a thin project wrapper where neede
 Implementation note:
 - InputManager is a lightweight wrapper over scene.input.keyboard and key codes
 - no custom global DOM keyboard listeners are used
+- default bindings: W/A/S/D for movement, E for interact
+- key maps are created per-scene and cleaned up on SHUTDOWN and DESTROY
 
 ### 7.2 Keybinding Design
 Input should be configurable via the settings menu.
@@ -147,6 +151,13 @@ Responsibilities:
 - collision interaction with environment
 - interaction range detection
 - animation state or sprite-frame updates
+
+Current implementation:
+- player movement is handled inline in each world scene's `update` loop
+- `InputManager.getMovementVector` provides a normalized direction vector
+- movement speed is 220 px/s with world-bounds clamping
+- `SpriteAnimationHandler` manages idle (4-frame, 2fps) and walk (6-frame, 9fps) animations
+- animation playback rate scales with movement magnitude
 
 ### 8.2 Companion: Noonie
 Noonie should be implemented as a companion layer or character reference associated with Ibelle.
@@ -195,6 +206,10 @@ Content includes:
 - companions or unlocks
 - mini-game progression summary if relevant
 
+Current implementation:
+- `GameSceneHUD` wraps `UIManager` and shows the current world name, science points, and knowledge meter percentage
+- inventory, companions, objectives, and community knowledge detail are not yet displayed
+
 ### 10.2 Transition Overlay
 The transition controller should cover the screen and animate between scenes.
 
@@ -228,6 +243,12 @@ Each save slot should store:
 - story flags
 - explored locations
 - save timestamp
+
+Current implementation:
+- `SaveManager` stores: `scene`, `sciencePoints`, `knowledgeMeter`, `inventory`, `companions`, `createdAt`
+- three slots stored under localStorage key `ibelle-environmental-scientist-saves`
+- default save state includes Noonie in the companions array
+- player position, story flags, and explored locations are not yet persisted
 
 ## 12. Narrative and Cutscene System
 ### 12.1 Cutscene Manager
