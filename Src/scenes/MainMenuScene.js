@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import UIManager from '../core/UIManager.js';
+import { MainMenuGUI } from '../ui/MainMenuGUI.js';
 
 export class MainMenuScene extends Phaser.Scene {
   constructor() {
@@ -8,12 +9,19 @@ export class MainMenuScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+    this.width = width;
+    this.height = height;
     const uiManager = new UIManager(this);
+    const mainMenuGUI = new MainMenuGUI(uiManager);
+
     this.cameras.main.setBackgroundColor('#111827');
 
-    uiManager.addLabel(width / 2, 120, 'IBELLE');
+    mainMenuGUI.subscribeToStartButton(this.onStartGame.bind(this));
+    mainMenuGUI.subscribeToLoadButton(this.onLoadGame.bind(this));
+    mainMenuGUI.subscribeToSettingsButton(this.onOpenSettings.bind(this));
+  }
 
-    const startButton = uiManager.addButton(width / 2, 260, 'Start Game', () => {
+  onStartGame() {
       const saveManager = this.registry.get('saveManager');
       const saves = saveManager.loadAll();
       const slotIndex = saves.findIndex((save) => !save.used);
@@ -28,15 +36,15 @@ export class MainMenuScene extends Phaser.Scene {
 
       this.registry.set('activeSave', createdSave.state);
       this.scene.start('TownSquare');
-    });
+  }
 
-    const loadButton = uiManager.addButton(width / 2, 330, 'Load Game', () => {
+  onLoadGame() {
       const saveManager = this.registry.get('saveManager');
       const saves = saveManager.loadAll();
       const availableSave = saves.find((save) => save.used) ?? null;
 
       if (!availableSave || !availableSave.state) {
-        this.add.text(width / 2, 560, 'No saves found.', {
+        this.add.text(this.width / 2, 560, 'No saves found.', {
           fontFamily: 'monospace',
           fontSize: '18px',
           color: '#fbbf24',
@@ -46,14 +54,13 @@ export class MainMenuScene extends Phaser.Scene {
 
       this.registry.set('activeSave', availableSave.state);
       this.scene.start(availableSave.state.scene || 'TownSquare');
-    });
+  }
 
-    const settingsButton = uiManager.addButton(width / 2, 400, 'Settings', () => {
-      this.add.text(width / 2, 560, 'Settings menu coming soon.', {
+  onOpenSettings() {
+      this.add.text(this.width / 2, 560, 'Settings menu coming soon.', {
         fontFamily: 'monospace',
         fontSize: '18px',
         color: '#a5f3fc',
       }).setOrigin(0.5);
-    });
   }
 }
