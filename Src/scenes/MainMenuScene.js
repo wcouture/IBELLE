@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import UIManager from '../core/UIManager.js';
 import { MainMenuGUI } from '../ui/MainMenuGUI.js';
+import { SwitchScene, FadeIn } from '../core/SceneSwitcher.js';
 
 export class MainMenuScene extends Phaser.Scene {
   constructor() {
@@ -9,6 +10,8 @@ export class MainMenuScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+    FadeIn(this);
+
     this.width = width;
     this.height = height;
     const uiManager = new UIManager(this);
@@ -35,7 +38,7 @@ export class MainMenuScene extends Phaser.Scene {
       });
 
       this.registry.set('activeSave', createdSave.state);
-      this.scene.start('TownSquare');
+      SwitchScene(this, 'TownSquare');
   }
 
   onLoadGame() {
@@ -53,7 +56,7 @@ export class MainMenuScene extends Phaser.Scene {
       }
 
       this.registry.set('activeSave', availableSave.state);
-      this.scene.start(availableSave.state.scene || 'TownSquare');
+      SwitchScene(this, availableSave.state.scene || 'TownSquare');
   }
 
   onOpenSettings() {

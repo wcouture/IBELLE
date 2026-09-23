@@ -4,6 +4,7 @@ import { lazyLagoonMap } from '../world/maps/lazyLagoonMap.js';
 import UIManager from '../core/UIManager.js';
 import { GameSceneHUD } from '../ui/GameSceneHUD.js';
 import { SpriteAnimationHandler } from '../core/SpriteAnimationHandler.js';
+import { SwitchScene, FadeIn } from '../core/SceneSwitcher.js';
 
 export class LazyLagoonScene extends Phaser.Scene {
   constructor() {
@@ -37,6 +38,7 @@ export class LazyLagoonScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+    FadeIn(this);
     this.inputManager = this.registry.get('inputManager');
     this.cameras.main.setBackgroundColor('#1d4ed8');
     this.uiManager = new UIManager(this);
@@ -92,7 +94,7 @@ export class LazyLagoonScene extends Phaser.Scene {
 
   update() {
     if (this.inputManager.wasPressed(this, 'interact')) {
-        this.scene.start('TownSquare');
+        SwitchScene(this, 'TownSquare');
     }
 
     const speed = 220;

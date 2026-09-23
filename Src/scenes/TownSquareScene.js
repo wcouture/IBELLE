@@ -4,6 +4,7 @@ import { townSquareMap } from '../world/maps/townSquareMap.js';
 import UIManager from '../core/UIManager.js';
 import { GameSceneHUD } from '../ui/GameSceneHUD.js';
 import { SpriteAnimationHandler } from '../core/SpriteAnimationHandler.js';
+import { SwitchScene, FadeIn } from '../core/SceneSwitcher.js';
 
 export class TownSquareScene extends Phaser.Scene {
   constructor() {
@@ -37,9 +38,11 @@ export class TownSquareScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+    FadeIn(this);
+
     this.inputManager = this.registry.get('inputManager');
     this.uiManager = new UIManager(this);
-    
+
     // Display game scene HUD
     const save = this.registry.get('activeSave');
     this.gameSceneHUD = new GameSceneHUD(this.uiManager);
@@ -93,7 +96,7 @@ export class TownSquareScene extends Phaser.Scene {
 
   update() {
     if (this.inputManager.wasPressed(this, 'interact')) {
-        this.scene.start('LazyLagoon');
+        SwitchScene(this, 'LazyLagoon');
     }
 
     const speed = 220;

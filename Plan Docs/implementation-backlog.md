@@ -154,7 +154,7 @@ Priority: Must have
 ### Phase 3: World Content and Progression
 Priority: High
 
-#### 11. Transition Controller ← CURRENT STEP
+#### 11. Transition Controller ✅ DONE
 - Add screen-cover overlay animation
 - Trigger transition before and after scene swap
 - Ensure overlay fades or slides cleanly
@@ -177,7 +177,7 @@ Priority: High
   - Load Game finds the first used slot and restores the saved scene
   - Settings button shows a "coming soon" stub
 
-#### 13. Settings Menu
+#### 13. Settings Menu <-- CURRENT STEP
 - Add volume slider
 - Add keybinding panel with action list and key capture
 - Persist settings in save configuration or user settings store
