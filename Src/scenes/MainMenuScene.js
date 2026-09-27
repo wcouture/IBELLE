@@ -14,8 +14,10 @@ export class MainMenuScene extends Phaser.Scene {
 
     this.width = width;
     this.height = height;
+    const pageWidth = this.registry.get('gameWidth') ?? width;
+    const pageHeight = this.registry.get('gameHeight') ?? height;
     const uiManager = new UIManager(this);
-    const mainMenuGUI = new MainMenuGUI(uiManager);
+    const mainMenuGUI = new MainMenuGUI(uiManager, pageWidth, pageHeight);
 
     this.cameras.main.setBackgroundColor('#111827');
 
@@ -60,10 +62,6 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   onOpenSettings() {
-      this.add.text(this.width / 2, 560, 'Settings menu coming soon.', {
-        fontFamily: 'monospace',
-        fontSize: '18px',
-        color: '#a5f3fc',
-      }).setOrigin(0.5);
+      SwitchScene(this, 'SettingsMenu');
   }
 }

@@ -1,8 +1,13 @@
 export class GameSceneHUD {
-    constructor(uiManager) {
+    constructor(uiManager, pageWidth = 1280, pageHeight = 720) {
         this.uiManager = uiManager;
-        this.sciencePointsLabel = this.uiManager.addLabel(32, 62, `Science Points: 0 | Knowledge: 0%`, false);
-        this.worldLabel = this.uiManager.addLabel(32, 32, `World: Unknown`, false);
+        this.pageWidth = pageWidth;
+        this.pageHeight = pageHeight;
+
+        const paddingX = Math.max(24, pageWidth * 0.02);
+        const paddingY = Math.max(24, pageHeight * 0.04);
+        this.sciencePointsLabel = this.uiManager.addLabel(paddingX, paddingY + 28, `Science Points: 0 | Knowledge: 0%`, false);
+        this.worldLabel = this.uiManager.addLabel(paddingX, paddingY, `World: Unknown`, false);
     }
 
     setSciencePoints(sciencePoints) {

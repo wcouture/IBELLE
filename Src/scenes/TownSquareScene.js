@@ -41,11 +41,13 @@ export class TownSquareScene extends Phaser.Scene {
     FadeIn(this);
 
     this.inputManager = this.registry.get('inputManager');
+    const pageWidth = this.registry.get('gameWidth') ?? width;
+    const pageHeight = this.registry.get('gameHeight') ?? height;
     this.uiManager = new UIManager(this);
 
     // Display game scene HUD
     const save = this.registry.get('activeSave');
-    this.gameSceneHUD = new GameSceneHUD(this.uiManager);
+    this.gameSceneHUD = new GameSceneHUD(this.uiManager, pageWidth, pageHeight);
     this.gameSceneHUD.setWorld('Town Square');
     this.gameSceneHUD.setSciencePoints(save?.sciencePoints ?? 0);
     this.gameSceneHUD.setKnowledge(save?.knowledgeMeter ?? 0);

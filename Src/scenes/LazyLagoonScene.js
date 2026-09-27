@@ -40,12 +40,14 @@ export class LazyLagoonScene extends Phaser.Scene {
     const { width, height } = this.scale;
     FadeIn(this);
     this.inputManager = this.registry.get('inputManager');
+    const pageWidth = this.registry.get('gameWidth') ?? width;
+    const pageHeight = this.registry.get('gameHeight') ?? height;
     this.cameras.main.setBackgroundColor('#1d4ed8');
     this.uiManager = new UIManager(this);
 
     // Initialize game scene HUD
     const save = this.registry.get('activeSave');
-    this.gameSceneHUD = new GameSceneHUD(this.uiManager);
+    this.gameSceneHUD = new GameSceneHUD(this.uiManager, pageWidth, pageHeight);
     this.gameSceneHUD.setWorld('Lazy Lagoon');
     this.gameSceneHUD.setSciencePoints(save?.sciencePoints ?? 0);
     this.gameSceneHUD.setKnowledge(save?.knowledgeMeter ?? 0);

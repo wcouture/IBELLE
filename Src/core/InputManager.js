@@ -11,6 +11,38 @@ export class InputManager {
     };
   }
 
+  keyCodeToLabel(keyCode) {
+    const labelMap = {
+      [Phaser.Input.Keyboard.KeyCodes.W]: 'W',
+      [Phaser.Input.Keyboard.KeyCodes.A]: 'A',
+      [Phaser.Input.Keyboard.KeyCodes.S]: 'S',
+      [Phaser.Input.Keyboard.KeyCodes.D]: 'D',
+      [Phaser.Input.Keyboard.KeyCodes.E]: 'E',
+      [Phaser.Input.Keyboard.KeyCodes.Q]: 'Q',
+      [Phaser.Input.Keyboard.KeyCodes.R]: 'R',
+      [Phaser.Input.Keyboard.KeyCodes.F]: 'F',
+      [Phaser.Input.Keyboard.KeyCodes.UP]: '↑',
+      [Phaser.Input.Keyboard.KeyCodes.DOWN]: '↓',
+      [Phaser.Input.Keyboard.KeyCodes.LEFT]: '←',
+      [Phaser.Input.Keyboard.KeyCodes.RIGHT]: '→',
+      [Phaser.Input.Keyboard.KeyCodes.SPACE]: 'Space',
+      [Phaser.Input.Keyboard.KeyCodes.ENTER]: 'Enter',
+      [Phaser.Input.Keyboard.KeyCodes.ESC]: 'Esc',
+    };
+
+    if (keyCode === undefined || keyCode === null) {
+      return 'Unbound';
+    }
+
+    const mappedLabel = labelMap[keyCode];
+    if (mappedLabel) {
+      return mappedLabel;
+    }
+
+    const fallback = String.fromCharCode(keyCode).toUpperCase();
+    return fallback || 'Unbound';
+  }
+
   clearSceneKeyMap(scene) {
     if (scene.__inputKeyMap) {
       scene.__inputKeyMap = null;
@@ -19,6 +51,24 @@ export class InputManager {
     if (scene.__inputKeyMapLifecycleBound) {
       scene.__inputKeyMapLifecycleBound = false;
     }
+  }
+
+  getBindingLabel(action) {
+    return this.keyCodeToLabel(this.bindings[action]);
+  }
+
+  rebindAction(scene, action, keyCode) {
+    if (!this.bindings[action]) {
+      return false;
+    }
+
+    this.bindings[action] = keyCode;
+
+    if (scene && scene.__inputKeyMap) {
+      this.clearSceneKeyMap(scene);
+    }
+
+    return true;
   }
 
   getKeyMap(scene) {
