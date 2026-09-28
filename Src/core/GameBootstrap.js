@@ -6,6 +6,7 @@ import { MainMenuScene } from '../scenes/MainMenuScene.js';
 import { SettingsMenuScene } from '../scenes/SettingsMenuScene.js';
 import { TownSquareScene } from '../scenes/TownSquareScene.js';
 import { LazyLagoonScene } from '../scenes/LazyLagoonScene.js';
+import { MapBuilderScene } from '../scenes/MapBuilderScene.js';
 
 export class GameBootstrap {
   constructor() {
@@ -37,7 +38,7 @@ export class GameBootstrap {
           debug: false,
         },
       },
-      scene: [MainMenuScene, SettingsMenuScene, TownSquareScene, LazyLagoonScene],
+      scene: [MainMenuScene, SettingsMenuScene, TownSquareScene, LazyLagoonScene, MapBuilderScene],
     });
 
     this.game.registry.set('gameWidth', gameWidth);
