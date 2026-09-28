@@ -185,7 +185,7 @@ Priority: High
   - volume changes take effect
   - key bindings can be rebound and saved
 
-#### 14. Progression Manager
+#### 14. Progression Manager ✅ DONE
 - Add science points tracking
 - Add inventory tracking
 - Track completed mini-games and unlocked items
