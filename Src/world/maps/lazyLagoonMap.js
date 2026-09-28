@@ -77,4 +77,5 @@ export const lazyLagoonMap = {
   playerSpawnTile: { x: CENTER, y: CENTER },
   worldLayer,
   decorationLayer,
+  signMessages: {},
 };

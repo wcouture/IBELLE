@@ -55,4 +55,52 @@ export default class UIManager {
             this.uiContainer.remove(label, true);
         }
     }
+
+    addDialog(message, pageWidth, pageHeight) {
+        if (this.activeDialog) return;
+
+        const boxWidth = Math.min(500, pageWidth * 0.8);
+        const boxX = pageWidth / 2;
+        const boxY = pageHeight * 0.75;
+
+        // Render text first so we can measure its height
+        const text = this.scene.add.text(boxX, boxY, message, {
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            color: '#bfdbfe',
+            wordWrap: { width: boxWidth - 32 },
+            align: 'center',
+        });
+        text.setOrigin(0.5, 0.5);
+
+        const hint = this.scene.add.text(boxX, boxY, '[E] Dismiss', {
+            fontFamily: 'monospace',
+            fontSize: '11px',
+            color: '#64748b',
+        });
+        hint.setOrigin(0.5, 0);
+
+        const padding = 16;
+        const boxHeight = text.height + hint.height + padding * 2 + 8;
+        const textY = boxY - hint.height / 2 - 4;
+        const hintY = boxY + text.height / 2 + 8;
+
+        text.setY(textY);
+        hint.setY(hintY);
+
+        const box = this.scene.add.rectangle(boxX, boxY, boxWidth, boxHeight, 0x0b1220, 0.9);
+        box.setStrokeStyle(2, 0xbfdbfe);
+
+        this.activeDialog = { box, text, hint };
+        this.uiContainer.add([box, text, hint]);
+    }
+
+    removeDialog() {
+        if (!this.activeDialog) return;
+        const { box, text, hint } = this.activeDialog;
+        this.uiContainer.remove(box, true);
+        this.uiContainer.remove(text, true);
+        this.uiContainer.remove(hint, true);
+        this.activeDialog = null;
+    }
 }

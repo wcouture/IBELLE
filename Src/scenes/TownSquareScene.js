@@ -5,6 +5,7 @@ import UIManager from '../core/UIManager.js';
 import { GameSceneHUD } from '../ui/GameSceneHUD.js';
 import { SpriteAnimationHandler } from '../core/SpriteAnimationHandler.js';
 import { SwitchScene, FadeIn } from '../core/SceneSwitcher.js';
+import { ACTIONS } from '../core/Actions.js';
 
 export class TownSquareScene extends Phaser.Scene {
   constructor() {
@@ -14,6 +15,9 @@ export class TownSquareScene extends Phaser.Scene {
     this.refreshVisibleTiles = undefined;
     this.checkInteractiveTiles = undefined;
     this.actionStates = {};
+    this.signMessages = {};
+    this.pageWidth = undefined;
+    this.pageHeight = undefined;
   }
 
   preload() {
@@ -41,8 +45,6 @@ export class TownSquareScene extends Phaser.Scene {
     FadeIn(this);
 
     this.inputManager = this.registry.get('inputManager');
-    const pageWidth = this.registry.get('gameWidth') ?? width;
-    const pageHeight = this.registry.get('gameHeight') ?? height;
     this.uiManager = new UIManager(this);
 
     const progressionManager = this.registry.get('progressionManager');
@@ -51,8 +53,11 @@ export class TownSquareScene extends Phaser.Scene {
       progressionManager.hydrateFromSave(save);
     }
 
+    this.pageWidth = this.registry.get('gameWidth') ?? width;
+    this.pageHeight = this.registry.get('gameHeight') ?? height;
+
     // Display game scene HUD
-    this.gameSceneHUD = new GameSceneHUD(this.uiManager, pageWidth, pageHeight);
+    this.gameSceneHUD = new GameSceneHUD(this.uiManager, this.pageWidth, this.pageHeight);
     this.gameSceneHUD.setWorld('Town Square');
     this.gameSceneHUD.setSciencePoints(progressionManager?.getSciencePoints() ?? save?.sciencePoints ?? 0);
     this.gameSceneHUD.setKnowledge(progressionManager?.getKnowledgeMeter() ?? save?.knowledgeMeter ?? 0);
@@ -64,6 +69,7 @@ export class TownSquareScene extends Phaser.Scene {
     this.worldBounds = generatedWorld.bounds;
     this.refreshVisibleTiles = generatedWorld.refreshVisibleTiles;
     this.checkInteractiveTiles = generatedWorld.checkInteractiveTiles;
+    this.signMessages = generatedWorld.signMessages;
     const playerWidth = townSquareMap.tileSize * 0.8;
     const playerHeight = townSquareMap.tileSize * 1.8;
 
@@ -103,7 +109,19 @@ export class TownSquareScene extends Phaser.Scene {
 
   update() {
     if (this.inputManager.wasPressed(this, 'interact')) {
+      if (this.uiManager.activeDialog) {
+        this.uiManager.removeDialog();
+        return;
+      }
+
+      const readEntry = Object.entries(this.actionStates).find(
+        ([, state]) => state.available && state.tileData?.interact_action === ACTIONS.READ,
+      );
+      if (readEntry) {
+        this.handleSignRead(readEntry[0]);
+      } else {
         SwitchScene(this, 'LazyLagoon');
+      }
     }
 
     const speed = 220;
@@ -133,7 +151,7 @@ export class TownSquareScene extends Phaser.Scene {
     if (this.actionStates) {
         const key = gridLocation.x + ',' + gridLocation.y;
         const label = this.uiManager.addLabel(screenLocation.x, screenLocation.y, tileData.interact_action.name, true, true);
-        this.actionStates[key] = { available: true, uiElement: label };
+        this.actionStates[key] = { available: true, uiElement: label, tileData };
     }
   }
 
@@ -149,5 +167,10 @@ export class TownSquareScene extends Phaser.Scene {
             actionState.uiElement = null;
         }
     }
+  }
+
+  handleSignRead(gridKey) {
+    const message = this.signMessages[gridKey] ?? 'The sign is blank.';
+    this.uiManager.addDialog(message, this.pageWidth, this.pageHeight);
   }
 }
