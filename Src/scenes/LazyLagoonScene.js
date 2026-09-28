@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { createPlayerVisual, preloadPlayerSprite, preloadTileSprites, renderWorldMap } from '../world/renderWorldMap.js';
+import { preloadPlayerSprite, preloadTileSprites, renderWorldMap } from '../world/renderWorldMap.js';
+import { PlayerController } from '../core/PlayerController.js';
 import { lazyLagoonMap } from '../world/maps/lazyLagoonMap.js';
 import UIManager from '../core/UIManager.js';
 import { GameSceneHUD } from '../ui/GameSceneHUD.js';
@@ -72,7 +73,7 @@ export class LazyLagoonScene extends Phaser.Scene {
     const playerHeight = lazyLagoonMap.tileSize * 1.8;
 
     // Render player
-    this.player = createPlayerVisual(
+    this.player = new PlayerController(
       this,
       generatedWorld.spawnPoint.x,
       generatedWorld.spawnPoint.y,
@@ -93,14 +94,14 @@ export class LazyLagoonScene extends Phaser.Scene {
         frameRate: 9,
       },
     ]);
-    this.playerAnimationHandler.play(this.player, 'player-idle');
+    this.playerAnimationHandler.play(this.player.sprite, 'player-idle');
 
     const camera = this.cameras.main;
     const worldWidth = this.worldBounds.maxX - this.worldBounds.minX;
     const worldHeight = this.worldBounds.maxY - this.worldBounds.minY;
     camera.setBounds(this.worldBounds.minX, this.worldBounds.minY, worldWidth, worldHeight);
     camera.setDeadzone(this.scale.width * 0.5, this.scale.height * 0.5);
-    camera.startFollow(this.player, true, 0.2, 0.2);
+    camera.startFollow(this.player.sprite, true, 0.2, 0.2);
 
     this.refreshVisibleTiles?.();
   }
@@ -122,24 +123,7 @@ export class LazyLagoonScene extends Phaser.Scene {
       }
     }
 
-    const speed = 220;
-    const movement = this.inputManager.getMovementVector(this);
-    const halfWidth = this.player.width / 2;
-    const halfHeight = this.player.height / 2;
-
-    this.player.x += movement.x * speed * (1 / 60);
-    this.player.y += movement.y * speed * (1 / 60);
-
-    this.player.x = Phaser.Math.Clamp(this.player.x, this.worldBounds.minX + halfWidth, this.worldBounds.maxX - halfWidth);
-    this.player.y = Phaser.Math.Clamp(this.player.y, this.worldBounds.minY + halfHeight, this.worldBounds.maxY - halfHeight);
-
-    const movementMagnitude = Math.hypot(movement.x, movement.y);
-    if (movementMagnitude > 0) {
-      const playbackRate = Phaser.Math.Linear(0.8, 1.4, movementMagnitude);
-      this.playerAnimationHandler.play(this.player, 'player-walk', playbackRate);
-    } else {
-      this.playerAnimationHandler.play(this.player, 'player-idle', 1);
-    }
+    this.player.updateMovement(this.inputManager, this.playerAnimationHandler, this.worldBounds);
 
     this.refreshVisibleTiles?.();
     this.checkInteractiveTiles?.(this.player, this.handleActionAvailable.bind(this), this.handleActionUnavailable.bind(this));
