@@ -45,12 +45,17 @@ export class TownSquareScene extends Phaser.Scene {
     const pageHeight = this.registry.get('gameHeight') ?? height;
     this.uiManager = new UIManager(this);
 
-    // Display game scene HUD
+    const progressionManager = this.registry.get('progressionManager');
     const save = this.registry.get('activeSave');
+    if (progressionManager) {
+      progressionManager.hydrateFromSave(save);
+    }
+
+    // Display game scene HUD
     this.gameSceneHUD = new GameSceneHUD(this.uiManager, pageWidth, pageHeight);
     this.gameSceneHUD.setWorld('Town Square');
-    this.gameSceneHUD.setSciencePoints(save?.sciencePoints ?? 0);
-    this.gameSceneHUD.setKnowledge(save?.knowledgeMeter ?? 0);
+    this.gameSceneHUD.setSciencePoints(progressionManager?.getSciencePoints() ?? save?.sciencePoints ?? 0);
+    this.gameSceneHUD.setKnowledge(progressionManager?.getKnowledgeMeter() ?? save?.knowledgeMeter ?? 0);
 
     // Generate world map
     this.cameras.main.setBackgroundColor('#2f7d5a');

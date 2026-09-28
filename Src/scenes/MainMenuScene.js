@@ -39,7 +39,12 @@ export class MainMenuScene extends Phaser.Scene {
         companions: ['Noonie'],
       });
 
+      this.registry.set('saveSlotIndex', targetSlot);
       this.registry.set('activeSave', createdSave.state);
+      const progressionManager = this.registry.get('progressionManager');
+      if (progressionManager) {
+        progressionManager.hydrateFromSave(createdSave.state);
+      }
       SwitchScene(this, 'TownSquare');
   }
 
@@ -57,7 +62,12 @@ export class MainMenuScene extends Phaser.Scene {
         return;
       }
 
+      this.registry.set('saveSlotIndex', saves.indexOf(availableSave));
       this.registry.set('activeSave', availableSave.state);
+      const progressionManager = this.registry.get('progressionManager');
+      if (progressionManager) {
+        progressionManager.hydrateFromSave(availableSave.state);
+      }
       SwitchScene(this, availableSave.state.scene || 'TownSquare');
   }
 

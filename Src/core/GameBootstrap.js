@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SaveManager } from './SaveManager.js';
 import { InputManager } from './InputManager.js';
+import { ProgressionManager } from './ProgressionManager.js';
 import { MainMenuScene } from '../scenes/MainMenuScene.js';
 import { SettingsMenuScene } from '../scenes/SettingsMenuScene.js';
 import { TownSquareScene } from '../scenes/TownSquareScene.js';
@@ -11,6 +12,7 @@ export class GameBootstrap {
     this.saveManager = new SaveManager();
     this.inputManager = new InputManager();
     this.game = null;
+    this.progressionManager = null;
   }
 
   start() {
@@ -47,6 +49,8 @@ export class GameBootstrap {
 
     this.game.registry.set('saveManager', this.saveManager);
     this.game.registry.set('inputManager', this.inputManager);
+    this.progressionManager = new ProgressionManager(this.game.registry, { sciencePoints: 0, knowledgeMeter: 0 });
+    this.game.registry.set('progressionManager', this.progressionManager);
     this.game.registry.set('settings', { volume: 0.8 });
     this.game.registry.set('activeSave', null);
   }

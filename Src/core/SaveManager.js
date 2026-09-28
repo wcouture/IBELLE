@@ -64,6 +64,25 @@ export class SaveManager {
     return slot;
   }
 
+  updateSaveState(slotIndex, updatedState = null) {
+    const saves = this.loadAll();
+    if (!saves[slotIndex]) {
+      return null;
+    }
+
+    const currentState = updatedState ?? saves[slotIndex].state ?? {};
+    saves[slotIndex].used = true;
+    saves[slotIndex].timestamp = new Date().toISOString();
+    saves[slotIndex].state = {
+      ...(saves[slotIndex].state ?? {}),
+      ...currentState,
+      updatedAt: Date.now(),
+    };
+
+    this.saveAll(saves);
+    return saves[slotIndex].state;
+  }
+
   loadSave(slotIndex) {
     const saves = this.loadAll();
     return saves[slotIndex]?.state ?? null;

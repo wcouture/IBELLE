@@ -177,7 +177,7 @@ Priority: High
   - Load Game finds the first used slot and restores the saved scene
   - Settings button shows a "coming soon" stub
 
-#### 13. Settings Menu <-- CURRENT STEP
+#### 13. Settings Menu ✅ DONE
 - Add volume slider
 - Add keybinding panel with action list and key capture
 - Persist settings in save configuration or user settings store
