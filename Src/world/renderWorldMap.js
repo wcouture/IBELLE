@@ -121,7 +121,7 @@ function drawTile(scene, parent, x, y, size, tileId) {
 }
 
 export function renderWorldMap(scene, mapData) {
-  const { tileSize, worldLayer, decorationLayer, playerSpawnTile } = mapData;
+  const { tileSize, worldLayer, decorationLayer, playerSpawnTile, signMessages } = mapData;
   validateLayerShape(worldLayer, decorationLayer);
 
   const rowCount = worldLayer.length;
@@ -210,6 +210,7 @@ export function renderWorldMap(scene, mapData) {
       x: spawnX,
       y: spawnY,
     },
+    signMessages: signMessages ?? {},
     refreshVisibleTiles,
     checkInteractiveTiles,
   };

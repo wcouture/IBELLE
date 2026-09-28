@@ -55,4 +55,43 @@ export default class UIManager {
             this.uiContainer.remove(label, true);
         }
     }
+
+    addDialog(message, pageWidth, pageHeight) {
+        if (this.activeDialog) return;
+
+        const boxWidth = Math.min(500, pageWidth * 0.8);
+        const boxX = pageWidth / 2;
+        const boxY = pageHeight * 0.75;
+
+        const box = this.scene.add.rectangle(boxX, boxY, boxWidth, 90, 0x0b1220, 0.9);
+        box.setStrokeStyle(2, 0xbfdbfe);
+
+        const text = this.scene.add.text(boxX, boxY, message, {
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            color: '#bfdbfe',
+            wordWrap: { width: boxWidth - 32 },
+            align: 'center',
+        });
+        text.setOrigin(0.5);
+
+        const hint = this.scene.add.text(boxX, boxY + 34, '[E] Dismiss', {
+            fontFamily: 'monospace',
+            fontSize: '11px',
+            color: '#64748b',
+        });
+        hint.setOrigin(0.5);
+
+        this.activeDialog = { box, text, hint };
+        this.uiContainer.add([box, text, hint]);
+    }
+
+    removeDialog() {
+        if (!this.activeDialog) return;
+        const { box, text, hint } = this.activeDialog;
+        this.uiContainer.remove(box, true);
+        this.uiContainer.remove(text, true);
+        this.uiContainer.remove(hint, true);
+        this.activeDialog = null;
+    }
 }

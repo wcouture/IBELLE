@@ -71,4 +71,7 @@ export const townSquareMap = {
   playerSpawnTile: { x: CENTER, y: CENTER },
   worldLayer,
   decorationLayer,
+  signMessages: {
+    [`${CENTER},${CENTER}`]: 'Welcome to Town Square! Explore the paths and discover what nature has to offer.',
+  },
 };
