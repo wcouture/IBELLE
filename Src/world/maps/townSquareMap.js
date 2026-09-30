@@ -59,7 +59,7 @@ function buildTownSquareDecorationLayer(worldLayer) {
     }
   }
 
-  decorationLayer[CENTER][CENTER] = 102;
+  decorationLayer[CENTER - 3][CENTER] = 102;
   return decorationLayer;
 }
 
@@ -71,4 +71,7 @@ export const townSquareMap = {
   playerSpawnTile: { x: CENTER, y: CENTER },
   worldLayer,
   decorationLayer,
+  signMessages: {
+    [`${CENTER},${CENTER - 3}`]: 'Welcome to Town Square! Explore the paths and discover what nature has to offer.',
+  },
 };

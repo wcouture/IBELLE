@@ -24,6 +24,7 @@ export class MainMenuScene extends Phaser.Scene {
     mainMenuGUI.subscribeToStartButton(this.onStartGame.bind(this));
     mainMenuGUI.subscribeToLoadButton(this.onLoadGame.bind(this));
     mainMenuGUI.subscribeToSettingsButton(this.onOpenSettings.bind(this));
+    mainMenuGUI.subscribeToMapBuilderButton(this.onOpenMapBuilder.bind(this));
   }
 
   onStartGame() {
@@ -72,6 +73,10 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   onOpenSettings() {
-      SwitchScene(this, 'SettingsMenu');
+    SwitchScene(this, 'SettingsMenu');
+  }
+
+  onOpenMapBuilder() {
+    SwitchScene(this, 'MapBuilder');
   }
 }

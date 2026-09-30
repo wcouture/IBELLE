@@ -3,6 +3,7 @@ export class MainMenuGUI {
         this.startButtonSubscribers = [];
         this.loadButtonSubscribers = [];
         this.settingsButtonSubscribers = [];
+        this.mapBuilderButtonSubscribers = [];
 
         this.pageWidth = pageWidth;
         this.pageHeight = pageHeight;
@@ -26,6 +27,10 @@ export class MainMenuGUI {
         this.settingsButton = this.uiManager.addButton(centerX, firstButtonY + (buttonSpacing * 2), 'Settings', () => {
             this.notifySubscribers(this.settingsButtonSubscribers);
         });
+
+        this.mapBuilderButton = this.uiManager.addButton(centerX, firstButtonY + (buttonSpacing * 3), 'Map Builder', () => {
+            this.notifySubscribers(this.mapBuilderButtonSubscribers);
+        });
     }
 
     notifySubscribers(subscribers) {
@@ -44,5 +49,9 @@ export class MainMenuGUI {
 
     subscribeToSettingsButton(callback) {
         this.settingsButtonSubscribers.push(callback);
+    }
+
+    subscribeToMapBuilderButton(callback) {
+        this.mapBuilderButtonSubscribers.push(callback);
     }
 };
