@@ -8,6 +8,8 @@ export class InputManager {
       left: Phaser.Input.Keyboard.KeyCodes.A,
       right: Phaser.Input.Keyboard.KeyCodes.D,
       interact: Phaser.Input.Keyboard.KeyCodes.E,
+      mouseLeft: Phaser.Input.Mouse.LEFT,
+      mouseRight: Phaser.Input.Mouse.RIGHT,
     };
   }
 
@@ -28,6 +30,8 @@ export class InputManager {
       [Phaser.Input.Keyboard.KeyCodes.SPACE]: 'Space',
       [Phaser.Input.Keyboard.KeyCodes.ENTER]: 'Enter',
       [Phaser.Input.Keyboard.KeyCodes.ESC]: 'Esc',
+      [Phaser.Input.Mouse.LEFT]: 'Mouse Left',
+      [Phaser.Input.Mouse.RIGHT]: 'Mouse Right',
     };
 
     if (keyCode === undefined || keyCode === null) {
@@ -58,7 +62,11 @@ export class InputManager {
   }
 
   rebindAction(scene, action, keyCode) {
-    if (!this.bindings[action]) {
+    if (!(action in this.bindings)) {
+      return false;
+    }
+
+    if (keyCode === undefined || keyCode === null) {
       return false;
     }
 

@@ -22,7 +22,7 @@ function getTileTextureKey(tileId) {
   return `${TILE_TEXTURE_KEY_PREFIX}${tile.texture}`;
 }
 
-function getTileRenderWindow(camera, originX, originY, tileSize, colCount, rowCount) {
+export function getTileRenderWindow(camera, originX, originY, tileSize, colCount, rowCount) {
   const view = camera.worldView;
   const startCol = Math.max(0, Math.floor((view.x - originX) / tileSize) - TILE_RENDER_OVERSCAN);
   const endCol = Math.min(

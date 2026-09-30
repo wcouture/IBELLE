@@ -43,15 +43,13 @@ export class MapBuilder {
     }
 
     getMap() {
-        const mapData = {
+        return {
           tileSize: 12,
           playerSpawnTile: { x: this.width / 2, y: this.height / 2 },
           worldLayer: this.worldLayer,
           decorationLayer: this.decorationLayer,
           signMessages: {},
         };
-
-        return mapData;
     }
     
 }

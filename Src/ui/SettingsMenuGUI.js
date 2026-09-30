@@ -34,6 +34,8 @@ export class SettingsMenuGUI {
       { action: 'left', label: 'Move Left' },
       { action: 'right', label: 'Move Right' },
       { action: 'interact', label: 'Interact' },
+      { action: 'mouseLeft', label: 'Mouse Left' },
+      { action: 'mouseRight', label: 'Mouse Right' },
     ];
 
     this.renderBindings();
